@@ -14,15 +14,13 @@ console.log(buff);
 parser.on('data', parseString);
 let arr = [];
 function parseString(str) {
-	console.log(str);
+	// console.log(str);
 	xyz = str;
-
-	// arr = str.split(' ');
-	// _x = arr[0];
-	// _y = arr[1];
-	// _z = arr[2];
-	// console.log(_x, _y, _z);
-	// console.log('__');
+	arr = str.split(' ');
+	let _x = arr[0] - 180;
+	let _y = arr[1] - 180;
+	let _z = arr[2] - 180;
+	console.log(_x, _y, _z);
 }
 
 //
