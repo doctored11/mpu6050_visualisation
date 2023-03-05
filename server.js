@@ -17,9 +17,9 @@ function parseString(str) {
 	// console.log(str);
 	xyz = str;
 	arr = str.split(' ');
-	let _x = arr[0] - 180;
-	let _y = arr[1] - 180;
-	let _z = arr[2] - 180;
+	let _x = arr[0];
+	let _y = arr[1];
+	let _z = arr[2];
 	console.log(_x, _y, _z);
 }
 

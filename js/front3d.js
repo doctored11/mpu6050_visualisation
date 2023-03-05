@@ -4,6 +4,9 @@ import { GLTFLoader } from 'GLTFLoader';
 console.log(THREE);
 //
 //
+let ax_prev = 0;
+let ay_prev = 0;
+let az_prev = 0;
 //
 const borderView = 8;
 let mode = 'rocket';
@@ -45,6 +48,22 @@ const properties = {
 		particleSpeed: 1 / 10000,
 		particleRad: Math.random() * (3.6 - 1.6) + 1.6,
 	},
+	cube: {
+		link: '',
+		scale: 1,
+		x: 1,
+		y: 1,
+		z: 1,
+		particleCount: 0,
+		particleMaxR: 0,
+		particleMaxG: 0,
+		particleMaxB: 0,
+		particleMinR: 80,
+		particleMinG: 0,
+		particleMinB: 0,
+		particleBrightness: 0,
+		particleRad: 0,
+	},
 };
 
 const scene = new THREE.Scene();
@@ -64,31 +83,33 @@ scene.background = new THREE.Color(0x87ceeb);
 //
 const loader = new GLTFLoader();
 let model;
-loader.load(
-	properties[mode].link,
-	// '../rocket/scene.gltf',
-	// '../ship/corabl.glb',
-	function (glb) {
-		model = glb.scene;
-		console.log(glb.scene);
-		glb.scene.position.z = 0;
-		glb.scene.position.x = 0;
-		glb.scene.position.y = -2;
-		glb.scene.rotation.x = -90;
-		// glb.scene.scale.set(10, 10, 10);
-		glb.scene.scale.set(
-			properties[mode].scale,
-			properties[mode].scale,
-			properties[mode].scale
-		);
+if (mode != 'cube') {
+	loader.load(
+		properties[mode].link,
+		// '../rocket/scene.gltf',
+		// '../ship/corabl.glb',
+		function (glb) {
+			model = glb.scene;
+			console.log(glb.scene);
+			glb.scene.position.z = 0;
+			glb.scene.position.x = 0;
+			glb.scene.position.y = -2;
+			glb.scene.rotation.x = 0;
+			// glb.scene.scale.set(10, 10, 10);
+			glb.scene.scale.set(
+				properties[mode].scale,
+				properties[mode].scale,
+				properties[mode].scale
+			);
 
-		scene.add(glb.scene);
-	},
-	undefined,
-	function (error) {
-		console.error(error);
-	}
-);
+			scene.add(glb.scene);
+		},
+		undefined,
+		function (error) {
+			console.error(error);
+		}
+	);
+}
 //
 
 var L1 = new THREE.PointLight(0xffffff, 1);
@@ -109,10 +130,12 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 //
-// const geometry = new THREE.BoxGeometry(1, 0.4, 2);
-// const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-// model = new THREE.Mesh(geometry, material);
-// scene.add(model);
+if (mode == 'cube') {
+	const geometry = new THREE.BoxGeometry(1, 0.4, 2);
+	const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+	model = new THREE.Mesh(geometry, material);
+	scene.add(model);
+}
 
 camera.position.z = 5;
 
@@ -145,6 +168,7 @@ const cubes = [];
 
 // Создаем функцию для генерации случайных цветов
 function getRandomColor() {
+	if (!mode) return;
 	const r = Math.floor(
 		Math.random() * (properties[mode].particleMaxR - properties[mode].particleMinR) +
 			properties[mode].particleMinR
@@ -165,6 +189,7 @@ function getRandomColor() {
 }
 
 // Создаем много кубов и добавляем их в группу
+
 for (let i = 0; i < properties[mode].particleCount; ++i) {
 	const geometry = new THREE.BoxGeometry(
 		Math.random() * (0.15 - 0.05) + 0.05,
@@ -249,11 +274,14 @@ function animate() {
 		ay = 0,
 		az = 0;
 	if (properties[mode].x) ax = -_x; //-x
-	if (properties[mode].y) ay = -_y; //-y
+	if (properties[mode].y) ay = _y; //y
 	if (properties[mode].z) az = _z; //z -работает только на малых отклонениях
-	az = _z; //!!!!!!!!!!!!!!!!возможно убрать
+	// az = _z; //!!!!!!!!!!!!!!!!возможно убрать
+
+	// if (ax > Math.PI / 2 || ax < -Math.PI / 2) ay *= -1;
+
 	model.rotation.x = ax;
-	model.rotation.z = -ay;
+	model.rotation.z = ay;
 	model.rotation.y = az;
 
 	renderer.render(scene, camera);
@@ -261,12 +289,6 @@ function animate() {
 
 animate();
 
-function filter(angle) {
-	if (angle > 360 || angle < -360) {
-		return angle % 360;
-	}
-	return angle;
-}
 //
 //
 //
