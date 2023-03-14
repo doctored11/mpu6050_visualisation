@@ -11,20 +11,21 @@
 				}
 			}
 		</script>
+		<link rel="stylesheet" href="style/style.css" />
 	</head>
 	<body>
 		<!--  -->
 		<!-- <script src="./js/three.js"></script> -->
+
+		<div class="menu">
+			<select id="select">
+				<option value="cube">Cube</option>
+				<option value="ship">ship</option>
+				<option value="rocket">rocket</option>
+			</select>
+		</div>
 		<script src="/socket.io/socket.io.js"></script>
 
-		<script>
-			// var socket = io();
-
-			// socket.on('message', function (msg) {
-			// 	console.log(msg);
-
-			// });
-		</script>
 		<script type="module" src="./js/three.js"></script>
 		<script type="module" src="./js/front3d.js"></script>
 	</body>

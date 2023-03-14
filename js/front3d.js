@@ -3,13 +3,25 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'GLTFLoader';
 console.log(THREE);
 //
+
 //
 let ax_prev = 0;
 let ay_prev = 0;
 let az_prev = 0;
 //
 const borderView = 8;
-let mode = 'rocket';
+let mode = 'cube';
+//
+const modeSelect = document.querySelector('select');
+modeSelect.onchange = () => {
+	console.log(modeSelect.value);
+	mode = modeSelect.value;
+	// getRandomColor();
+	createParticles();
+
+	loadModel();
+};
+
 //
 //
 //
@@ -78,64 +90,63 @@ scene.background = new THREE.Color(0x87ceeb);
 //
 //
 //
-
-//
-//
-const loader = new GLTFLoader();
 let model;
-if (mode != 'cube') {
-	loader.load(
-		properties[mode].link,
-		// '../rocket/scene.gltf',
-		// '../ship/corabl.glb',
-		function (glb) {
-			model = glb.scene;
-			console.log(glb.scene);
-			glb.scene.position.z = 0;
-			glb.scene.position.x = 0;
-			glb.scene.position.y = -2;
-			glb.scene.rotation.x = 0;
-			// glb.scene.scale.set(10, 10, 10);
-			glb.scene.scale.set(
-				properties[mode].scale,
-				properties[mode].scale,
-				properties[mode].scale
-			);
+loadModel();
 
-			scene.add(glb.scene);
-		},
-		undefined,
-		function (error) {
-			console.error(error);
-		}
-	);
+function loadModel() {
+	const loader = new GLTFLoader();
+	if (model) scene.remove(model);
+	if (mode != 'cube') {
+		loader.load(
+			properties[mode].link,
+			function (glb) {
+				model = glb.scene;
+				console.log(glb.scene);
+				glb.scene.position.z = 0;
+				glb.scene.position.x = 0;
+				glb.scene.position.y = -2;
+				glb.scene.rotation.x = 0;
+				// glb.scene.scale.set(10, 10, 10);
+				glb.scene.scale.set(
+					properties[mode].scale,
+					properties[mode].scale,
+					properties[mode].scale
+				);
+
+				scene.add(glb.scene);
+			},
+			undefined,
+			function (error) {
+				console.error(error);
+			}
+		);
+	}
+	if (mode == 'cube') {
+		const geometry = new THREE.BoxGeometry(1, 0.4, 2);
+		const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+		model = new THREE.Mesh(geometry, material);
+		scene.add(model);
+	}
 }
 //
 
 var L1 = new THREE.PointLight(0xffffff, 1);
-L1.position.z = 50;
+L1.position.z = 150;
 L1.position.y = 50;
 L1.position.x = -10;
 scene.add(L1);
 
 var L2 = new THREE.PointLight(0xffffff, 0.9);
-L2.position.z = 120;
-L2.position.y = -50;
+L2.position.z = 10;
+L2.position.y = -100;
 L2.position.x = -50;
 scene.add(L2);
 
 const renderer = new THREE.WebGLRenderer();
-// renderer.setClearColor(0x000000, 0);
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 //
-if (mode == 'cube') {
-	const geometry = new THREE.BoxGeometry(1, 0.4, 2);
-	const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-	model = new THREE.Mesh(geometry, material);
-	scene.add(model);
-}
 
 camera.position.z = 5;
 
@@ -150,12 +161,9 @@ socket.on('message', function (msg) {
 	_x = arr[0] * (Math.PI / 180);
 	_y = arr[1] * (Math.PI / 180);
 	_z = arr[2] * (Math.PI / 180);
-	// console.log(_x, _y, _z);
+	console.log(_x, _y, _z);
 });
 
-//
-//
-//
 //
 //
 
@@ -189,25 +197,22 @@ function getRandomColor() {
 }
 
 // Создаем много кубов и добавляем их в группу
-
-for (let i = 0; i < properties[mode].particleCount; ++i) {
-	const geometry = new THREE.BoxGeometry(
-		Math.random() * (0.15 - 0.05) + 0.05,
-		Math.random() * (0.15 - 0.05) + 0.05,
-		Math.random() * (0.15 - 0.05) + 0.05
-	);
-	const material = new THREE.MeshBasicMaterial({ color: getRandomColor() });
-	const cube = new THREE.Mesh(geometry, material);
-	group.add(cube);
-	cube.position.set(0, -2, 20);
-	cubes.push(cube);
+createParticles();
+function createParticles() {
+	for (let i = 0; i < properties[mode].particleCount; ++i) {
+		const geometry = new THREE.BoxGeometry(
+			Math.random() * (0.15 - 0.05) + 0.05,
+			Math.random() * (0.15 - 0.05) + 0.05,
+			Math.random() * (0.15 - 0.05) + 0.05
+		);
+		const material = new THREE.MeshBasicMaterial({ color: getRandomColor() });
+		const cube = new THREE.Mesh(geometry, material);
+		group.add(cube);
+		cube.position.set(0, -2, 20);
+		cubes.push(cube);
+	}
 }
 
-// Создаем переменную для хранения времени
-let time = 0;
-//
-
-//
 //
 //
 // облака
@@ -245,23 +250,22 @@ if (mode == 'ship') {
 }
 
 //
+
 function animate() {
 	requestAnimationFrame(animate);
 	//
 	///
 	//
-	// Циклическое изменение углов поворота частиц
-	// Увеличиваем время на 0.01 на каждом кадре
 
 	let max = 1;
-	// Обновляем положение кубов
+	//
 
 	//
 	switch (mode) {
-		case 'rocket': // if (x === 'value1')
+		case 'rocket':
 			particleFlameAnimate();
 			break;
-		case 'ship': // if (x === 'value2')
+		case 'ship':
 			particleShipAnimate();
 			break;
 	}
@@ -270,15 +274,17 @@ function animate() {
 	cloudAnimate();
 	//
 	//
-	let ax = 0,
+	let ax = 3,
 		ay = 0,
 		az = 0;
+
+	////////////////////////////////////
+
 	if (properties[mode].x) ax = -_x; //-x
 	if (properties[mode].y) ay = _y; //y
 	if (properties[mode].z) az = _z; //z -работает только на малых отклонениях
-	// az = _z; //!!!!!!!!!!!!!!!!возможно убрать
 
-	// if (ax > Math.PI / 2 || ax < -Math.PI / 2) ay *= -1;
+	// az = _z; //!!!!!!!!!!!!!!!!возможно убрать
 
 	model.rotation.x = ax;
 	model.rotation.z = ay;
@@ -334,7 +340,7 @@ function cloudAnimate() {
 		let cloudHeight = cloud.geometry.parameters.height;
 		let cloudWidth = cloud.geometry.parameters.width;
 		let cloudDepth = cloud.geometry.parameters.depth;
-		console.log(newX, newY, newZ);
+		// console.log(newX, newY, newZ);
 		if (
 			newX + cloudWidth > -1 / 2 &&
 			newX - cloudWidth / 2 < 1 / 2 &&
@@ -411,7 +417,7 @@ function particleShipAnimate() {
 function createExplosion(x, y, z) {
 	var particles = [];
 
-	// Создаем 10 квадратных частиц
+	// Создаем n квадратных частиц
 	for (var i = 0; i < 30; i++) {
 		var particleGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
 		var particleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
