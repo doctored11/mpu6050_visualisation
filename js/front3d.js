@@ -4,10 +4,10 @@ import { GLTFLoader } from 'GLTFLoader';
 console.log(THREE);
 //
 
+let text = document.querySelector('.text');
+
 //
-let ax_prev = 0;
-let ay_prev = 0;
-let az_prev = 0;
+
 //
 const borderView = 8;
 let mode = 'cube';
@@ -16,10 +16,15 @@ const modeSelect = document.querySelector('select');
 modeSelect.onchange = () => {
 	console.log(modeSelect.value);
 	mode = modeSelect.value;
-	// getRandomColor();
 	createParticles();
-
+	waterAdd();
 	loadModel();
+	if (mode =='cube'){
+		scene.background = new THREE.Color(0xffffff);
+		return;
+	}
+	createClouds();
+	scene.background = new THREE.Color(0x87ceeb);
 };
 
 //
@@ -85,7 +90,8 @@ const camera = new THREE.PerspectiveCamera(
 	0.1,
 	1000
 );
-scene.background = new THREE.Color(0x87ceeb);
+
+scene.background = new THREE.Color(0xffffff);
 
 //
 //
@@ -106,7 +112,6 @@ function loadModel() {
 				glb.scene.position.x = 0;
 				glb.scene.position.y = -2;
 				glb.scene.rotation.x = 0;
-				// glb.scene.scale.set(10, 10, 10);
 				glb.scene.scale.set(
 					properties[mode].scale,
 					properties[mode].scale,
@@ -161,13 +166,13 @@ socket.on('message', function (msg) {
 	_x = arr[0] * (Math.PI / 180);
 	_y = arr[1] * (Math.PI / 180);
 	_z = arr[2] * (Math.PI / 180);
-	console.log(_x, _y, _z);
+	// console.log(_x, _y, _z);
 });
 
 //
 //
 
-// Создаем группу объектов, в которую будем добавлять кубы
+// Создаем группу объектов, в которую будем добавлять кубы (вообще все)
 const group = new THREE.Group();
 scene.add(group);
 
@@ -199,6 +204,9 @@ function getRandomColor() {
 // Создаем много кубов и добавляем их в группу
 createParticles();
 function createParticles() {
+	group.children=[];
+	if (mode =='cube') return; //! вынести подобное (+лучше проверить по наличию link)
+	console.log(group);
 	for (let i = 0; i < properties[mode].particleCount; ++i) {
 		const geometry = new THREE.BoxGeometry(
 			Math.random() * (0.15 - 0.05) + 0.05,
@@ -217,16 +225,18 @@ function createParticles() {
 //
 // облака
 const clouds = [];
+function createClouds(){
+
 const groupCloud = new THREE.Group();
 scene.add(groupCloud);
-for (let i = 0; i < 15; i++) {
+for (let i = 0; i < 8; ++i) {
 	let random = Math.random() * (2 - 0.5) + 0.5;
 	const geometry = new THREE.BoxGeometry(random, random / 4, random);
 
 	const material = new THREE.MeshBasicMaterial({
-		color: 0xffffff, // белый цвет
-		opacity: 0.5, // прозрачность
-		transparent: true, // включаем прозрачность
+		color: 0xffffff, 
+		opacity: 0.5, 
+		transparent: true, 
 	});
 
 	const cloud = new THREE.Mesh(geometry, material);
@@ -239,17 +249,30 @@ for (let i = 0; i < 15; i++) {
 	cloud.explosion = false;
 	clouds.push(cloud);
 }
+}
 //
 //
+let water;
+function waterAdd(){
+	
+	
 if (mode == 'ship') {
 	const geometry = new THREE.BoxGeometry(100, -1, 5);
 	const material = new THREE.MeshBasicMaterial({ color: 0x16f0e1 });
-	const water = new THREE.Mesh(geometry, material);
+	water = new THREE.Mesh(geometry, material);
 	water.position.set(0, -1.7, 0);
 	scene.add(water);
+	return;
+}
+	scene.remove(water);
+
 }
 
+
 //
+let colorX ='red',
+	colorY ='red',
+	colorZ ='red';
 
 function animate() {
 	requestAnimationFrame(animate);
@@ -274,21 +297,23 @@ function animate() {
 	cloudAnimate();
 	//
 	//
-	let ax = 3,
+	let ax = 0,
 		ay = 0,
 		az = 0;
-
+	
 	////////////////////////////////////
-
-	if (properties[mode].x) ax = -_x; //-x
-	if (properties[mode].y) ay = _y; //y
-	if (properties[mode].z) az = _z; //z -работает только на малых отклонениях
-
+	colorX='red'; colorY='red'; colorZ='red';
+	if (properties[mode].x) {ax = -_x; colorX='green'}; //-x
+	if (properties[mode].y) {ay = _y; colorY='green'} //y
+	if (properties[mode].z) {az = _z; colorZ='green'} //z -работает только на малых отклонениях
+	
+	drawText();
 	// az = _z; //!!!!!!!!!!!!!!!!возможно убрать
 
 	model.rotation.x = ax;
 	model.rotation.z = ay;
 	model.rotation.y = az;
+	
 
 	renderer.render(scene, camera);
 }
@@ -453,3 +478,11 @@ function createExplosion(x, y, z) {
 	}
 	update();
 }
+
+
+function drawText() {
+	
+	text.innerHTML = `rotX = <span style = "color:${colorX}"> ${Math.round(_x  * (180/Math.PI) * 100) / 100}</span> <br/>
+	rotY = <span style = "color:${colorY}"> ${Math.round(_y  * (180/Math.PI) * 100) / 100}</span> <br/>
+	rotZ = <span style = "color:${colorZ}"> ${Math.round(_z  * (180/Math.PI) * 100) / 100}</span> <br/> `}
+  

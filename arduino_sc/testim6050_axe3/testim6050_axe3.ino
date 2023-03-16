@@ -22,7 +22,7 @@ void setup() {
 }
 
 void loop() {
-  // Read accelerometer data
+
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x3B);
   Wire.endTransmission(false);
@@ -31,11 +31,9 @@ void loop() {
   AcY = (Wire.read() << 8 | Wire.read()) / Accel_Scale_Factor;
   AcZ = (Wire.read() << 8 | Wire.read()) / Accel_Scale_Factor;
 
-  // Calculate roll and pitch angles using accelerometer data
   roll = atan2(AcY, AcZ) * RAD_TO_DEG;
   pitch = atan2(-AcX, sqrt(pow(AcY, 2) + pow(AcZ, 2))) * RAD_TO_DEG;
 
-  // Read gyroscope data
   previousTime = currentTime;
   currentTime = millis();
   elapsedTime = (currentTime - previousTime) / 1000.0;
@@ -46,11 +44,8 @@ void loop() {
   GyroX = (Wire.read() << 8 | Wire.read()) / Gyro_Scale_Factor;
   GyroY = (Wire.read() << 8 | Wire.read()) / Gyro_Scale_Factor;
   GyroZ = (Wire.read() << 8 | Wire.read()) / Gyro_Scale_Factor;
-
-  // Calculate yaw angle using gyroscope data
   yaw += GyroZ * elapsedTime;
-  
-  // Print out roll, pitch, and yaw angles
+
   Serial.println(String(roll) + " " + String(pitch) + " " + String(yaw));
   
   delay(10);
