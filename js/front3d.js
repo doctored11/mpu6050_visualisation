@@ -484,5 +484,6 @@ function drawText() {
 	
 	text.innerHTML = `rotX = <span style = "color:${colorX}"> ${Math.round(_x  * (180/Math.PI) * 100) / 100}</span> <br/>
 	rotY = <span style = "color:${colorY}"> ${Math.round(_y  * (180/Math.PI) * 100) / 100}</span> <br/>
-	rotZ = <span style = "color:${colorZ}"> ${Math.round(_z  * (180/Math.PI) * 100) / 100}</span> <br/> `}
+	rotZ = <span style = "color:${colorZ}"> ${Math.round(_z  * (180/Math.PI) * 100) / 100}</span> <br/> `
+}
   
